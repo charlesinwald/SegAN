@@ -5,14 +5,14 @@ from numpy.random import normal
 from math import sqrt
 import argparse
 
-channel_dim = 3
-ndf = 64
+channel_dim = 1
+ndf = 8
 
 class GlobalConvBlock(nn.Module):
     def __init__(self, in_dim, out_dim, kernel_size):
         super(GlobalConvBlock, self).__init__()
-        pad0 = (kernel_size[0] - 1) / 2
-        pad1 = (kernel_size[1] - 1) / 2
+        pad0 = (kernel_size[0] - 1) // 2
+        pad1 = (kernel_size[1] - 1) // 2
 
         self.conv_l1 = nn.Conv2d(in_dim, out_dim, kernel_size=(kernel_size[0], 1),
                                  padding=(pad0, 0))
@@ -280,56 +280,54 @@ class NetS(nn.Module):
 
 
     def forward(self, input):
-        # for now it only supports one GPU
-        if isinstance(input.data, torch.cuda.FloatTensor) and self.ngpu is 1:
-            encoder1 = self.convblock1(input)
-            encoder1 = self.convblock1_1(encoder1)
-            encoder2 = self.convblock2(encoder1)
-            encoder2 = self.convblock2_1(encoder2)
-            encoder3 = self.convblock3(encoder2)
-            encoder3 = self.convblock3_1(encoder3)
-            encoder4 = self.convblock4(encoder3)
-            encoder4 = self.convblock4_1(encoder4)
-            encoder5 = self.convblock5(encoder4)
-            encoder5 = self.convblock5_1(encoder5)
-            encoder6 = self.convblock6(encoder5)
-            encoder6 = self.convblock6_1(encoder6) + encoder6
-            encoder7 = self.convblock7(encoder6)
-            encoder8 = self.convblock8(encoder7)
 
-            decoder1 = self.deconvblock1(encoder8)
-            decoder1 = torch.cat([encoder7,decoder1],1)
-            decoder1 = F.upsample(decoder1, size = encoder6.size()[2:], mode='bilinear')
-            decoder2 = self.deconvblock2(decoder1)
-            decoder2 = self.deconvblock2_1(decoder2) + decoder2
-            # concatenate along depth dimension
-            decoder2 = torch.cat([encoder6,decoder2],1)
-            decoder2 = F.upsample(decoder2, size = encoder5.size()[2:], mode='bilinear')
-            decoder3 = self.deconvblock3(decoder2)
-            decoder3 = self.deconvblock3_1(decoder3)
-            decoder3 = torch.cat([encoder5,decoder3],1)
-            decoder3 = F.upsample(decoder3, size = encoder4.size()[2:], mode='bilinear')
-            decoder4 = self.deconvblock4(decoder3)
-            decoder4 = self.deconvblock4_1(decoder4)
-            decoder4 = torch.cat([encoder4,decoder4],1)
-            decoder4 = F.upsample(decoder4, size = encoder3.size()[2:], mode='bilinear')
-            decoder5 = self.deconvblock5(decoder4)
-            decoder5 = self.deconvblock5_1(decoder5)
-            decoder5 = torch.cat([encoder3,decoder5],1)
-            decoder5 = F.upsample(decoder5, size = encoder2.size()[2:], mode='bilinear')
-            decoder6 = self.deconvblock6(decoder5)
-            decoder6 = self.deconvblock6_1(decoder6)
-            decoder6 = torch.cat([encoder2,decoder6],1)
-            decoder6 = F.upsample(decoder6, size = encoder1.size()[2:], mode='bilinear')
-            decoder7 = self.deconvblock7(decoder6)
-            decoder7 = self.deconvblock7_1(decoder7)
-            decoder7 = torch.cat([encoder1,decoder7],1)
-            decoder7 = F.upsample(decoder7, size = input.size()[2:], mode='bilinear')
-            decoder8 = self.deconvblock8(decoder7)
-            decoder8 = self.deconvblock8_1(decoder8)
-            decoder9 = self.deconvblock9(decoder8)
-        else:
-            print('For now we only support one GPU')
+        encoder1 = self.convblock1(input)
+        encoder1 = self.convblock1_1(encoder1)
+        encoder2 = self.convblock2(encoder1)
+        encoder2 = self.convblock2_1(encoder2)
+        encoder3 = self.convblock3(encoder2)
+        encoder3 = self.convblock3_1(encoder3)
+        encoder4 = self.convblock4(encoder3)
+        encoder4 = self.convblock4_1(encoder4)
+        encoder5 = self.convblock5(encoder4)
+        encoder5 = self.convblock5_1(encoder5)
+        encoder6 = self.convblock6(encoder5)
+        encoder6 = self.convblock6_1(encoder6) + encoder6
+        encoder7 = self.convblock7(encoder6)
+        encoder8 = self.convblock8(encoder7)
+
+        decoder1 = self.deconvblock1(encoder8)
+        decoder1 = torch.cat([encoder7,decoder1],1)
+        decoder1 = F.upsample(decoder1, size = encoder6.size()[2:], mode='bilinear')
+        decoder2 = self.deconvblock2(decoder1)
+        decoder2 = self.deconvblock2_1(decoder2) + decoder2
+        # concatenate along depth dimension
+        decoder2 = torch.cat([encoder6,decoder2],1)
+        decoder2 = F.upsample(decoder2, size = encoder5.size()[2:], mode='bilinear')
+        decoder3 = self.deconvblock3(decoder2)
+        decoder3 = self.deconvblock3_1(decoder3)
+        decoder3 = torch.cat([encoder5,decoder3],1)
+        decoder3 = F.upsample(decoder3, size = encoder4.size()[2:], mode='bilinear')
+        decoder4 = self.deconvblock4(decoder3)
+        decoder4 = self.deconvblock4_1(decoder4)
+        decoder4 = torch.cat([encoder4,decoder4],1)
+        decoder4 = F.upsample(decoder4, size = encoder3.size()[2:], mode='bilinear')
+        decoder5 = self.deconvblock5(decoder4)
+        decoder5 = self.deconvblock5_1(decoder5)
+        decoder5 = torch.cat([encoder3,decoder5],1)
+        decoder5 = F.upsample(decoder5, size = encoder2.size()[2:], mode='bilinear')
+        decoder6 = self.deconvblock6(decoder5)
+        decoder6 = self.deconvblock6_1(decoder6)
+        decoder6 = torch.cat([encoder2,decoder6],1)
+        decoder6 = F.upsample(decoder6, size = encoder1.size()[2:], mode='bilinear')
+        decoder7 = self.deconvblock7(decoder6)
+        decoder7 = self.deconvblock7_1(decoder7)
+        decoder7 = torch.cat([encoder1,decoder7],1)
+        decoder7 = F.upsample(decoder7, size = input.size()[2:], mode='bilinear')
+        decoder8 = self.deconvblock8(decoder7)
+        decoder8 = self.deconvblock8_1(decoder8)
+        decoder9 = self.deconvblock9(decoder8)
+
         
         return decoder9
 
@@ -439,26 +437,25 @@ class NetC(nn.Module):
                 m.bias.data.zero_()
 
     def forward(self, input):
-        if isinstance(input.data, torch.cuda.FloatTensor) and self.ngpu is 1:
-            batchsize = input.size()[0]
-            out1 = self.convblock1(input)
-            # out1 = self.convblock1_1(out1)
-            out2 = self.convblock2(out1)
-            # out2 = self.convblock2_1(out2)
-            out3 = self.convblock3(out2)
-            # out3 = self.convblock3_1(out3)
-            out4 = self.convblock4(out3)
-            # out4 = self.convblock4_1(out4)
-            out5 = self.convblock5(out4)
-            # out5 = self.convblock5_1(out5)
-            out6 = self.convblock6(out5)
-            # out6 = self.convblock6_1(out6) + out6
-            output = torch.cat((input.view(batchsize,-1),1*out1.view(batchsize,-1),
-                                2*out2.view(batchsize,-1),2*out3.view(batchsize,-1),
-                                2*out4.view(batchsize,-1),2*out5.view(batchsize,-1),
-                                4*out6.view(batchsize,-1)),1)
-        else:
-            print('For now we only support one GPU')
+
+        batchsize = input.size()[0]
+        out1 = self.convblock1(input)
+        # out1 = self.convblock1_1(out1)
+        out2 = self.convblock2(out1)
+        # out2 = self.convblock2_1(out2)
+        out3 = self.convblock3(out2)
+        # out3 = self.convblock3_1(out3)
+        out4 = self.convblock4(out3)
+        # out4 = self.convblock4_1(out4)
+        out5 = self.convblock5(out4)
+        # out5 = self.convblock5_1(out5)
+        out6 = self.convblock6(out5)
+        # out6 = self.convblock6_1(out6) + out6
+        output = torch.cat((input.view(batchsize,-1),1*out1.view(batchsize,-1),
+                            2*out2.view(batchsize,-1),2*out3.view(batchsize,-1),
+                            2*out4.view(batchsize,-1),2*out5.view(batchsize,-1),
+                            4*out6.view(batchsize,-1)),1)
+
 
         return output
 
