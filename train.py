@@ -16,11 +16,12 @@ from net import NetS, NetC
 from LoadDataCovid import Dataset, loader
 import math
 from tqdm import tqdm
+import shutil
 
 
 # Training settings
 parser = argparse.ArgumentParser(description='Example')
-parser.add_argument('--batchSize', type=int, default=15, help='training batch size')
+parser.add_argument('--batchSize', type=int, default=16, help='training batch size')
 parser.add_argument('--niter', type=int, default=10000, help='number of epochs to train for')
 parser.add_argument('--lr', type=float, default=0.002, help='Learning Rate. Default=0.02')
 parser.add_argument('--ngpu', type=int, default=1, help='number of GPUs to use, for now it only supports one GPU')
@@ -46,11 +47,16 @@ argED = {
 
 gammas=[0.5, 0.5,0.5,0.5]
 schedule=[50, 100,150,200]
-modelG_file='generator.pt'
-modelD_file='discriminator.pt'
+modelG_file='generator_l1.pt'
+modelD_file='discriminator_l1.pt'
+modelG_file_best = 'generator_l1_best.pt'
 
 activation = nn.LeakyReLU
 evel_every=1
+
+def save_checkpoint(checkpoint, is_best, bestmodel):
+    if is_best:
+        shutil.copyfile(checkpoint, bestmodel)
 
 # authors use this initializer, but it doesn't seem essential
 def Initializer(layers, slope=0.2):
@@ -298,8 +304,8 @@ for epoch in range(start_epoch+1,start_epoch+opt.niter+1):
                 target_masked = target_masked.cuda()
             #print(target_masked.shape)
             target_D = NetC(target_masked)
-            #loss_D = - torch.mean(torch.abs(result - target_D))
-            loss_D = - loss(result, target_D)
+            loss_D = - torch.mean(torch.abs(result - target_D))
+            #loss_D = - loss(result, target_D)
 
             epoch_loss_D+=loss_D
 
@@ -330,8 +336,8 @@ for epoch in range(start_epoch+1,start_epoch+opt.niter+1):
                 target_masked = target_masked.cuda()
             target_G = NetC(target_masked)
             loss_dice = dice_loss(output,target)
-            #loss_G = torch.mean(torch.abs(result - target_G))
-            loss_G = loss(result, target_G)
+            loss_G = torch.mean(torch.abs(result - target_G))
+            #loss_G = loss(result, target_G)
             loss_G_joint = loss_G + loss_dice
             epoch_loss+=loss_G_joint
 
@@ -421,23 +427,17 @@ for epoch in range(start_epoch+1,start_epoch+opt.niter+1):
         print(all_eval)
         print(all_G_loss)
 
+        is_best = False
         if dices > max_dice:
+            is_best = True
             max_dice = dices
 
-            state = {'epoch': epoch , 'state_dict': NetS.state_dict(),
-                     'optimizer': optimizerG.state_dict(), 'max_dice':max_dice }
-            torch.save(state, modelG_file)
+        state = {'epoch': epoch, 'state_dict': NetS.state_dict(),
+                 'optimizer': optimizerG.state_dict(), 'max_dice': max_dice}
+        torch.save(state, modelG_file)
 
-            state = {'epoch': epoch, 'state_dict': NetC.state_dict(),
-                     'optimizer': optimizerD.state_dict(), 'max_dice': max_dice}
-            torch.save(state, modelD_file)
+        state = {'epoch': epoch, 'state_dict': NetC.state_dict(),
+                 'optimizer': optimizerD.state_dict(), 'max_dice': max_dice}
+        torch.save(state, modelD_file)
 
-    #if epoch % 50 == 0:
-    #    lr = lr*decay
-    #    if lr <= 0.00000001:
-    #        lr = 0.00000001
-    #    print('Learning Rate: {:.6f}'.format(lr))
-        # print('K: {:.4f}'.format(k))
-    #    print('Max Dice: {:.4f}'.format(max_dice))
-    #    optimizerG = optim.Adam(NetS.parameters(), lr=lr, betas=(opt.beta1, 0.999))
-    #    optimizerD = optim.Adam(NetC.parameters(), lr=lr, betas=(opt.beta1, 0.999))
+        save_checkpoint(modelG_file, is_best, modelG_file_best)
