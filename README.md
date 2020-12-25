@@ -1,4 +1,7 @@
-# SegAN: Semantic Segmentation with Adversarial Learning
+# COVID-19 SegAN: Semantic Segmentation with Adversarial Learning
+While COVID-19 treatments are improving, there is still progress to be made. 
+The virus becomes dangerous once it begins damaging lung tissue. The ability to find and monitor such tissue can be challenging without successfully segmenting a patients lesions from the rest of their lungs.
+
 
 Pytorch implementation for the basic ideas from the paper [SegAN: Adversarial Network with Multi-scale L1 Loss for Medical Image Segmentation](https://arxiv.org/pdf/1706.01805.pdf) by Yuan Xue, Tao Xu, Han Zhang, L. Rodney Long, Xiaolei Huang.
 
@@ -14,13 +17,13 @@ python 2.7
 
 **Data**
 
-- Download the dataset for [ISBI International Skin Imaging Collaboration (ISIC) 2017 challenge, Part I Lesion Segmentation](https://challenge.kitware.com/#challenge/n/ISIC_2017%3A_Skin_Lesion_Analysis_Towards_Melanoma_Detection) and save data folders under the same directory of the code.
+- Download the dataset for [COVID-19 Lung CT Lesion Segmentation Challenge - 2020](https://covid-segmentation.grand-challenge.org/) and save data folders under the same directory of the code.
 - If you want to play with your own dataset, remember to change the folder name accordingly in the LoadData.py.
 
 
 
 **Training**
-- The steps to train a SegAN model on the ISIC skin lesion segmentation dataset.
+- The steps to train a SegAN model on the COVID-19 lung lesion segmentation dataset.
   - Run with: CUDA_VISIBLE_DEVICES=X(your GPU id) python train.py --cuda.
   	You can change training hyperparameters as you wish, the default output folder is ~/outputs. 
   	For now we only support training with one GPU.
@@ -28,7 +31,17 @@ python 2.7
   - The training code also includes the validation part, we will report validation results every 10 epochs, validation images will also be saved in the ~/outputs folder.
 - If you want to try your own datasets, you can just do whatever preprocess you want for your data to make them have similar format as this skin lesion segmentation dataset and put them in a folder similar to ~/ISIC-2017_Training_Data. You can run the model directly for a natural image dataset; For 3D medical data such as brain MRI scans, you need to extract 2D slices from the original data first. If your dataset has more than one class of label, you can run multiple S1-1C models as we described in the [SegAN paper](https://arxiv.org/pdf/1706.01805.pdf).
 
+### Citing Covid-19 SegAN
+If you find SegAN useful in your research, please consider citing:
 
+```
+@article{xue2017segan,
+  title={SegAN: Adversarial Network with Multi-scale $ L\_1 $ Loss for Medical Image Segmentation},
+  author={Xue, Yuan and Xu, Tao and Zhang, Han and Long, Rodney and Huang, Xiaolei},
+  journal={arXiv preprint arXiv:1706.01805},
+  year={2017}
+}
+```
 
 ### Citing SegAN
 If you find SegAN useful in your research, please consider citing:
